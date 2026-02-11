@@ -25,14 +25,18 @@
       width:100%; max-width:420px; background:var(--card); border-radius:20px;
       box-shadow:0 20px 40px rgba(0,0,0,.15); padding:22px 20px 20px;
       animation:pop .6s ease-out;
+      transition: height 0.3s ease;
+      overflow: hidden;
     }
     @keyframes pop{from{transform:scale(.96);opacity:.6}to{transform:scale(1);opacity:1}}
+    
     .badge{
       display:inline-flex; align-items:center; gap:8px; padding:8px 12px;
       background:#fff0f5; color:var(--accent); border-radius:999px; font-weight:600; font-size:13px;
     }
     h1{font-size:26px; line-height:1.2; margin:14px 0 8px}
     p{margin:0 0 16px; color:var(--muted)}
+    
     .buttons{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:10px 0 6px}
     button{
       appearance:none; border:0; border-radius:14px; padding:14px 12px; font-weight:700; font-size:16px;
@@ -42,45 +46,57 @@
     button:active{transform:translateY(1px); box-shadow:0 6px 12px rgba(0,0,0,.12)}
     .yes{background:linear-gradient(135deg,#34d399,var(--ok)); color:#053}
     .no{background:linear-gradient(135deg,#fb7185,var(--no)); color:#520}
+    
     .msg{margin-top:12px}
     textarea{
       width:100%; min-height:96px; resize:none; padding:12px 14px; border-radius:14px; border:1px solid #e5e7eb;
-      font-family:inherit; font-size:14px;
+      font-family:inherit; font-size:14px; outline-color: var(--accent);
     }
     .hidden{display:none}
+    
     .send{
       margin-top:12px; width:100%; background:linear-gradient(135deg,var(--accent),#ff6aa2);
       color:white; padding:14px; border-radius:14px; font-weight:700; font-size:16px;
     }
+    .send:disabled { opacity: 0.7; cursor: not-allowed; }
+
     .footer{margin-top:10px; text-align:center; font-size:12px; color:#9ca3af}
-    .heart{filter:drop-shadow(0 6px 10px rgba(255,59,127,.4))}
+    
+    .success-message {
+      text-align: center; padding: 20px 0;
+      animation: fadeIn 0.5s ease;
+    }
+    .success-icon { font-size: 60px; display: block; margin-bottom: 10px; animation: bounce 1s infinite; }
+    
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
     @media (max-width:360px){ h1{font-size:22px} }
   </style>
 </head>
 <body>
-  <main class="card">
-    <span class="badge">💖 Pregunta especial</span>
-    <h1>¿Quieres ser mi San Valentín?</h1>
-    <p>Prometo sonrisas, detalles y un día bonito. Sea cual sea tu respuesta, puedes dejarme un mensajito ✨</p>
+  <main class="card" id="mainCard">
+    <div id="contentStep">
+      <span class="badge">💖 Pregunta especial, para una persona muy especial</span>
+      <h1>Mi querida Camila... ¿Quieres ser mi San Valentín?</h1>
+      <p>Prometo sonrisas, detalles y un día bonito. Nada podría ser mejor para este sabado, que compartir mi día contigo. </p>
 
-    <div class="buttons">
-      <button class="yes" id="btnYes">Sí 💘</button>
-      <button class="no" id="btnNo">No 💔</button>
-    </div>
-
-    <!-- Formulario -->
-    <!-- Usa Formspree (gratis) para que te llegue la respuesta por correo -->
-    <!-- 1) Crea un formulario en https://formspree.io/ y copia tu endpoint -->
-    <!-- 2) Reemplaza action="https://formspree.io/f/XXXXXX" -->
-    <form id="form" class="hidden" action="https://formspree.io/f/XXXXXX" method="POST">
-      <input type="hidden" name="respuesta" id="respuesta" value="" />
-      <div class="msg">
-        <textarea name="mensaje" placeholder="Tu mensaje (opcional)"></textarea>
+      <div class="buttons">
+        <button class="yes" id="btnYes">Sí 💘</button>
+        <button class="no" id="btnNo">No 💔</button>
       </div>
-      <button class="send" type="submit">Enviar 💌</button>
-    </form>
+      
+      <form id="form" class="hidden" action="https://formspree.io/f/mkovoryb" method="POST">
+        <input type="hidden" name="respuesta" id="respuesta" value="" />
+        <div class="msg">
+          <textarea name="mensaje" required placeholder="Escribe algo bonito aquí (o déjalo en blanco)..."></textarea>
+        </div>
+        <button class="send" type="submit" id="submitBtn">Enviar 💌</button>
+        <p id="errorMsg" style="color:var(--no); font-size:12px; margin-top:8px; display:none; text-align:center;">Hubo un error al enviar 😢</p>
+      </form>
 
-    <div class="footer">Hecho con cariño ❤️</div>
+      <div class="footer">Hecho con cariño, y la mitad de mi horario laboral ❤️</div>
+    </div>
   </main>
 
   <script>
@@ -88,15 +104,60 @@
     const respuesta = document.getElementById('respuesta');
     const btnYes = document.getElementById('btnYes');
     const btnNo = document.getElementById('btnNo');
+    const submitBtn = document.getElementById('submitBtn');
+    const errorMsg = document.getElementById('errorMsg');
+    const mainCard = document.getElementById('mainCard');
+    const contentStep = document.getElementById('contentStep');
 
     function showForm(value){
       respuesta.value = value;
+      btnYes.style.opacity = '0.5'; btnYes.style.pointerEvents = 'none';
+      btnNo.style.opacity = '0.5'; btnNo.style.pointerEvents = 'none';
+      
       form.classList.remove('hidden');
-      form.scrollIntoView({behavior:'smooth', block:'center'});
+      setTimeout(() => form.scrollIntoView({behavior:'smooth', block:'end'}), 100);
     }
 
     btnYes.addEventListener('click', () => showForm('Sí'));
     btnNo.addEventListener('click', () => showForm('No'));
+
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Enviando cupido... 🏹';
+      errorMsg.style.display = 'none';
+
+      const formData = new FormData(form);
+
+      try {
+        const response = await fetch(form.action, {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          mainCard.innerHTML = `
+            <div class="success-message">
+              <span class="success-icon">💌</span>
+              <h1>¡Mensaje Recibido!</h1>
+              <p>Gracias por responder, Camila. <br>¡Ahora a esperar el sábado! ✨</p>
+              <div class="footer">Se te quiere ❤️</div>
+            </div>
+          `;
+        } else {
+          throw new Error('Error en el servidor');
+        }
+      } catch (error) {
+        console.error(error);
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Intentar de nuevo ↻';
+        errorMsg.style.display = 'block';
+      }
+    });
   </script>
 </body>
 </html>
